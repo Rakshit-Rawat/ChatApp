@@ -19,10 +19,7 @@ const server = createServer(app);
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors({
-  origin: "http://localhost:5173", // frontend URL
-  credentials: true
-}));
+app.use(cors());
 
 app.use("/auth", authRoute);
 app.use("/api/user", userRoute);
