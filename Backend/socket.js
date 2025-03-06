@@ -51,26 +51,23 @@ const initializeSocket = (server) => {
         senderId,
         timestamp = new Date().toISOString(),
       } = messageData;
-
-      console.log("Message received:", messageData);
-
-      // Get receiver's socket ID
-      const receiverSocketId = onlineUsers.get(receiverUsername);
-
-      if (receiverSocketId) {
+    
+      // Get receiver's socket info (not just ID)
+      const receiverInfo = onlineUsers.get(receiverUsername);
+    
+      if (receiverInfo && receiverInfo.socketId) {
         // Send to specific receiver with complete message details
-        io.to(receiverSocketId).emit("receive-message", {
+        io.to(receiverInfo.socketId).emit("receive-message", {
           conversationId,
           senderId,
-          content: messageContent,
+          content: messageContent,  // Keep using messageContent 
           senderUsername,
           timestamp,
         });
-
+    
         console.log(`Message sent to ${receiverUsername}`);
       } else {
         console.log(`User ${receiverUsername} is offline`);
-        // Implement offline message storage or queuing logic if needed
       }
     });
 

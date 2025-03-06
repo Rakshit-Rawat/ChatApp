@@ -6,6 +6,7 @@ import Login from "./Login";
 import Register from "./Register";
 import User from "./User";
 import MessengerLayout from "./MessengerLayout";
+import Home from './Home'
 
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
       <AuthProvider>
         <SocketProvider>
           <Routes>
+            <Route path="/" element={<Home/>}/>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/user" element={<User />} />

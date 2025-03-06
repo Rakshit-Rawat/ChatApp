@@ -138,7 +138,7 @@ const MessengerLayout = () => {
     // Listen for the status response from the server
     socket.once("status-response", ({ participantUsername, status }) => {
       if (participantUsername === chat.name) {
-        setParticipantStatus(status); // Update the status state
+        setParticipantStatus(status); 
         console.log(`Participant ${participantUsername} is ${status}`);
       }
     });
@@ -211,8 +211,13 @@ const MessengerLayout = () => {
       );
 
       socket.emit("send-message", {
-        ...messageData,
-        message: newMessage,
+        conversationId: selectedChat.id,
+        senderId: user.id,
+        senderUsername: user.username,
+        receiverId: otherParticipant._id,
+        receiverUsername: otherParticipant.username,
+        message: newMessage,  
+        timestamp: isoTimestamp,
       });
 
       await axios.patch(
@@ -288,6 +293,7 @@ const MessengerLayout = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
+  
   // Handle selecting a user from search results
   const handleSelectUser = async (selectedUser) => {
     if (!user) return;
@@ -754,8 +760,11 @@ const MessengerLayout = () => {
                   duration-300 
                   hover:scale-[1.02]
                 `}
+                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
                       >
-                        <p className="relative z-10">{msg.content}</p>
+                        <p className="relative z-10" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                          {msg.content}
+                        </p>
                         <span
                           className={`text-xs block mt-1 text-right ${
                             isCurrentUser ? "text-blue-100" : "text-gray-400"
