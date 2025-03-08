@@ -60,4 +60,29 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.delete("/bulk-delete", async (req, res) => {
+  const { messageIds } = req.body; 
+
+  
+  if (!Array.isArray(messageIds) || messageIds.length === 0) {
+    return res.status(400).json({ error: "messageIds must be a non-empty array" });
+  }
+
+  try {
+    
+    const result = await Message.deleteMany({ _id: { $in: messageIds } });
+
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "No messages found for the provided IDs" });
+    }
+
+    res.status(200).json({ message: `${result.deletedCount} message(s) deleted successfully` });
+  } catch (error) {
+    console.error("Error deleting messages:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 module.exports = router;

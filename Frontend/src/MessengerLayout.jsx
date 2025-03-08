@@ -11,13 +11,15 @@ const MessengerLayout = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [chats, setChats] = useState([]);
-  const [participantStatus, setParticipantStatus] = useState(false);
+  const [participantStatus, setParticipantStatus] = useState("offline");
   const [chatheaderHeight, setChatHeaderHeight] = useState(0);
   const [loadingChats, setLoadingChats] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const { user, setUser, logout } = useAuth();
   const socket = useSocket();
@@ -68,10 +70,18 @@ const MessengerLayout = () => {
       );
     });
 
+    socket.on("status-response", ({ participantUsername, status }) => {
+      console.log(`Status response received: ${participantUsername} is ${status}`);
+      if (selectedChat && participantUsername === selectedChat.name) {
+        setParticipantStatus(status);
+      }
+    });
+
     return () => {
       socket.off("receive-message");
+      socket.off('status-response')
     };
-  }, [socket, user]);
+  }, [socket, user,selectedChat]);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -125,6 +135,31 @@ const MessengerLayout = () => {
     fetchChats();
   }, [user]);
 
+  useEffect(() => {
+    if (!socket) return;
+    
+    // Listen for status updates of any user
+    socket.on("user-status-update", ({ username, status }) => {
+      console.log(`Status update received: ${username} is now ${status}`);
+      
+      // If this user is the one we're currently chatting with, update their status
+      if (selectedChat && selectedChat.name === username) {
+        setParticipantStatus(status);
+      }
+      
+      // Also update the status in the chat list if needed
+      setChats(prevChats => 
+        prevChats.map(chat => 
+          chat.name === username 
+            ? { ...chat, status } 
+            : chat
+        )
+      );
+    });
+    
+    return () => socket.off("user-status-update");
+  }, [socket, selectedChat]);
+
   const handleChatSelect = async (chat) => {
     setSelectedChat((prevChat) => ({
       ...chat,
@@ -135,13 +170,7 @@ const MessengerLayout = () => {
 
     socket.emit("check-status", { participantUsername: chat.name });
 
-    // Listen for the status response from the server
-    socket.once("status-response", ({ participantUsername, status }) => {
-      if (participantUsername === chat.name) {
-        setParticipantStatus(status); 
-        console.log(`Participant ${participantUsername} is ${status}`);
-      }
-    });
+
 
     try {
       const response = await axios.get(
@@ -216,7 +245,7 @@ const MessengerLayout = () => {
         senderUsername: user.username,
         receiverId: otherParticipant._id,
         receiverUsername: otherParticipant.username,
-        message: newMessage,  
+        message: newMessage,
         timestamp: isoTimestamp,
       });
 
@@ -293,7 +322,6 @@ const MessengerLayout = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  
   // Handle selecting a user from search results
   const handleSelectUser = async (selectedUser) => {
     if (!user) return;
@@ -335,6 +363,75 @@ const MessengerLayout = () => {
     setSearchResults([]);
   };
 
+  const toggleMessageSelection = (messageId) => {
+    setSelectedMessageIds((prevSelected) => {
+      if (prevSelected.includes(messageId)) {
+        return prevSelected.filter((id) => id !== messageId);
+      } else {
+        return [...prevSelected, messageId];
+      }
+    });
+  };
+
+  // Clear all selections
+  const clearSelection = () => {
+    setSelectedMessageIds([]);
+  };
+
+  // Trigger the confirmation modal
+  const handleDeleteMessages = () => {
+    if (selectedMessageIds.length > 0) {
+      setShowDeleteConfirmation(true);
+    }
+  };
+
+  // Confirm and execute deletion
+  const confirmDeleteMessages = () => {
+
+    if (selectedMessageIds.length === 0) return;
+    // Mock function for now - in a real app, this would call your API
+    console.log("Deleting messages:", selectedMessageIds);
+    deleteMessagesApi(selectedMessageIds);
+
+    // Remove the messages from the UI state
+    setMessages((prevMessages) =>
+      prevMessages.filter((msg) => !selectedMessageIds.includes(msg._id))
+    );
+
+    // Clear selection and close modal
+    setSelectedMessageIds([]);
+    setShowDeleteConfirmation(false);
+
+    //  success notification (optional)
+    // toast.success(`${selectedMessageIds.length} message(s) deleted`);
+  };
+
+  // For when you implement the backend:
+  const deleteMessagesApi = async (messageIds) => {
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/messages/bulk-delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authentication headers if needed
+        },
+        body: JSON.stringify({ messageIds }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete messages");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+      throw error;
+    }
+  };
+
+  
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
@@ -565,7 +662,7 @@ const MessengerLayout = () => {
                     className="w-12 h-12 flex   rounded-full items-center justify-center text-white shadow-md transform transition-all duration-300 group-hover:scale-110 "
                     style={{
                       background: chat.avatar.color,
-                      
+
                       backgroundImage: `linear-gradient(to bottom right, ${chat.avatar.color}, ${chat.avatar.color}80)`,
                     }}
                   >
@@ -596,7 +693,7 @@ const MessengerLayout = () => {
         {/* Chat Header */}
         <div
           ref={chatHeaderRef}
-          className={`p-5  bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm ${
+          className={`p-5 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm ${
             selectedChat
               ? "border-b"
               : "flex items-center justify-center h-full"
@@ -606,8 +703,8 @@ const MessengerLayout = () => {
             <div className="flex items-center">
               <div
                 className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white 
-                 shadow-md transform transition-all duration-300 
-                 hover:scale-110 hover:shadow-lg"
+           shadow-md transform transition-all duration-300 
+           hover:scale-110 hover:shadow-lg"
                 style={{
                   background: `${selectedChat.avatar.color}`,
                   backgroundImage: `linear-gradient(to bottom right, ${selectedChat.avatar.color}, ${selectedChat.avatar.color}80)`,
@@ -627,6 +724,39 @@ const MessengerLayout = () => {
               </div>
 
               <div className="ml-auto flex items-center space-x-3">
+                {selectedMessageIds.length > 0 && (
+                  <>
+                    <span className="text-sm text-gray-500">
+                      {selectedMessageIds.length} selected
+                    </span>
+                    <button
+                      onClick={handleDeleteMessages}
+                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Delete
+                    </button>
+                    <button
+                      onClick={clearSelection}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
                 <button className="text-gray-600 hover:text-blue-600 transition-colors">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -677,14 +807,13 @@ const MessengerLayout = () => {
 
         <div
           className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-blue-50 to-indigo-50 scrollbar 
-          
-  scrollbar-thumb-black 
-  scrollbar-track-black"
+    scrollbar-thumb-black 
+    scrollbar-track-black"
         >
           <div className="space-y-4">
             {messagesLoading ? (
               <div
-                className=" items-center justify-center h-full"
+                className="items-center justify-center h-full"
                 style={{ height: "100%", marginTop: chatheaderHeight }}
               >
                 <div className="flex items-center pt-[150px] justify-center ">
@@ -728,6 +857,7 @@ const MessengerLayout = () => {
                   const isCurrentUser =
                     msg.senderId === user.id ||
                     msg.senderUsername === user.username;
+                  const isSelected = selectedMessageIds.includes(msg._id);
                   return (
                     <div
                       key={index}
@@ -738,10 +868,7 @@ const MessengerLayout = () => {
                       <div
                         onClick={() => {
                           if (isCurrentUser) {
-                            setSelectedMessageId(msg._id);
-                            console.log(selectedMessageId);
-
-                            // Assuming `msg.id` uniquely identifies each message
+                            toggleMessageSelection(msg._id);
                           }
                         }}
                         className={`
@@ -755,14 +882,44 @@ const MessengerLayout = () => {
                       ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                       : "bg-white border border-gray-100"
                   }
+                  ${isSelected ? "ring-2 ring-offset-2 ring-red-400" : ""}
                   transform 
                   transition-all 
                   duration-300 
                   hover:scale-[1.02]
+                  ${isCurrentUser ? "cursor-pointer" : ""}
                 `}
-                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
                       >
-                        <p className="relative z-10" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                        {isCurrentUser && isSelected && (
+                          <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg z-20">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        <p
+                          className="relative z-10"
+                          style={{
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                          }}
+                        >
                           {msg.content}
                         </p>
                         <span
@@ -790,8 +947,39 @@ const MessengerLayout = () => {
           </div>
         </div>
 
-        {/* Message Input */}
+        {/* Confirmation Modal */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full animate-fade-in-up">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Confirm Deletion
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete{" "}
+                {selectedMessageIds.length === 1
+                  ? "this message"
+                  : `these ${selectedMessageIds.length} messages`}
+                ? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteMessages}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* Message Input */}
         {selectedChat && (
           <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50">
             <div className="flex items-center space-x-3 bg-white rounded-full p-1 shadow-lg border border-blue-100 hover:border-blue-200 transition-all duration-300">
@@ -812,12 +1000,12 @@ const MessengerLayout = () => {
               />
               <button
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white 
-        px-6 py-2 rounded-full 
-        hover:from-blue-600 hover:to-purple-700 
-        transform hover:scale-105 
-        transition-all duration-300 
-        shadow-md hover:shadow-xl 
-        active:scale-95"
+  px-6 py-2 rounded-full 
+  hover:from-blue-600 hover:to-purple-700 
+  transform hover:scale-105 
+  transition-all duration-300 
+  shadow-md hover:shadow-xl 
+  active:scale-95"
                 onClick={handleSendMessage}
               >
                 Send
