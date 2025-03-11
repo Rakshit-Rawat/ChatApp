@@ -14,18 +14,18 @@ const COLORS = {
 
 // Constants array for tech stack cards
 const TECH_STACK = [
-  { name: "HTML5", icon: "../src/assets/HTML5.svg" },
-  { name: "CSS3", icon: "../src/assets/CSS3.svg" },
-  { name: "JavaScript", icon: "../src/assets/JavaScript.svg" },
-  { name: "TailwindCSS", icon: "../src/assets/Tailwind CSS.svg" },
-  { name: "Vite.js", icon: "../src/assets/Vite.js.svg" },
-  { name: "React", icon: "../src/assets/React.svg" },
-  { name: "Node.js", icon: "../src/assets/Node.js.svg" },
-  { name: "MongoDB", icon: "../src/assets/MongoDB.svg" },
-  { name: "Express", icon: "../src/assets/Express.svg" },
-  { name: "Socket.io", icon: "../src/assets/Socket.io.svg" },
-  { name: "Framer Motion", icon: "../src/assets/framer-motion.svg" },
-  { name: "shadcn/ui", icon: "../src/assets/shadcn.svg" },
+  { name: "HTML5", icon: "/assets/HTML5.svg" },
+  { name: "CSS3", icon: "/assets/CSS3.svg" },
+  { name: "JavaScript", icon: "/assets/JavaScript.svg" },
+  { name: "TailwindCSS", icon: "/assets/Tailwind CSS.svg" },
+  { name: "Vite.js", icon: "/assets/Vite.js.svg" },
+  { name: "React", icon: "/assets/React.svg" },
+  { name: "Node.js", icon: "/assets/Node.js.svg" },
+  { name: "MongoDB", icon: "/assets/MongoDB.svg" },
+  { name: "Express", icon: "/assets/Express.svg" },
+  { name: "Socket.io", icon: "/assets/Socket.io.svg" },
+  { name: "Framer Motion", icon: "/assets/framer-motion.svg" },
+  { name: "shadcn/ui", icon: "/assets/shadcn.svg" },
 ];
 
 const Home = () => {
