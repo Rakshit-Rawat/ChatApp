@@ -86,7 +86,7 @@ const Home = () => {
         {/* Logo and Title positioned higher */}
         <div className="flex items-center justify-center mt-14 mb-14">
           <img
-            src='../src/assets/logo.svg'
+            src='/assets/logo.svg'
             alt="Chat App Logo"
             className="w-16 h-16 mr-4"
           />
