@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
+import { Link } from 'react-router-dom';
 
 const Register = () => {
   const { register } = useAuth();
@@ -197,9 +198,9 @@ const Register = () => {
         
         <CardFooter className="flex justify-center py-6 border-t border-gray-100 text-sm text-gray-600">
           Already have an account?{' '}
-          <a href="/login" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
+          <Link to="/login" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
             Sign in
-          </a>
+          </Link>
         </CardFooter>
       </Card>
     </div>
