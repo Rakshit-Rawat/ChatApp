@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate and Link
 
 const Login = () => {
   const { login } = useAuth();
@@ -13,6 +14,7 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // Initialize the navigate hook
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,6 +29,11 @@ const Login = () => {
       const response = await login(formData);
       if (response.success) {
         setSuccess('Login successful!');
+        
+        // Delay the redirect so the success message shows first
+        setTimeout(() => {
+          navigate('/chat');
+        }, 2000); // Redirect after 2 seconds (adjust as needed)
       } else {
         setError(response.message || 'Login failed. Please try again.');
       }
@@ -179,9 +186,9 @@ const Login = () => {
 
         <CardFooter className="flex justify-center py-6 border-t border-gray-100 text-sm text-gray-600">
           Don't have an account?{' '}
-          <a href="/register" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
+          <Link to="/register" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
             Create one
-          </a>
+          </Link>
         </CardFooter>
       </Card>
     </div>
