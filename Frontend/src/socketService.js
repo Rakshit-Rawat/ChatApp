@@ -1,9 +1,9 @@
 import { io } from "socket.io-client";
-import { useAuth } from "./AuthContext";
+
 
 let socket; // Singleton socket instance
 
-const SOCKET_URL = "http://localhost:5000"; // Replace with your backend URL
+const SOCKET_URL = "https://chatapp-oq5w.onrender.com"; // Replace with your backend URL
 
 // Initialize the socket connection
 export const initializeSocket = (token, userId,username,logout) => {

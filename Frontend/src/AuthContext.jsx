@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/auth/login",
+        "https://chatapp-oq5w.onrender.com/auth/login",
         credentials,
         {
           withCredentials: true,
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Make a request to the backend to log out
       await axios.post(
-        "http://localhost:5000/auth/logout",
+        "https://chatapp-oq5w.onrender.com/auth/logout",
         { userId, username },
         {
           withCredentials: true,

@@ -90,7 +90,7 @@ const MessengerLayout = () => {
       try {
         setLoadingChats(true);
         const response = await axios.get(
-          `http://localhost:5000/api/conversation/${user.username}`,
+          `https://chatapp-oq5w.onrender.com/api/conversation/${user.username}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -174,7 +174,7 @@ const MessengerLayout = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/messages/${chat.id}`,
+        `https://chatapp-oq5w.onrender.com/api/messages/${chat.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -230,7 +230,7 @@ const MessengerLayout = () => {
 
     try {
       const { data: savedMessage } = await axios.post(
-        "http://localhost:5000/api/messages",
+        "https://chatapp-oq5w.onrender.com/api/messages",
         messageData,
         {
           headers: {
@@ -250,7 +250,7 @@ const MessengerLayout = () => {
       });
 
       await axios.patch(
-        `http://localhost:5000/api/conversation/${selectedChat.id}`,
+        `https://chatapp-oq5w.onrender.com/api/conversation/${selectedChat.id}`,
         {
           lastMessage: {
             content: newMessage,
@@ -302,7 +302,7 @@ const MessengerLayout = () => {
         setIsSearching(true);
         try {
           const response = await axios.get(
-            "http://localhost:5000/api/user/search",
+            "https://chatapp-oq5w.onrender.com/api/user/search",
             {
               params: { q: searchQuery.trim() },
             }
@@ -333,7 +333,7 @@ const MessengerLayout = () => {
     if (!existingChat) {
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/conversation/create",
+          "https://chatapp-oq5w.onrender.com/api/conversation/create",
           {
             participants: [user.username, selectedUser.username],
           },
@@ -410,7 +410,7 @@ const MessengerLayout = () => {
   const deleteMessagesApi = async (messageIds) => {
   
     try {
-      const response = await fetch("http://localhost:5000/api/messages/bulk-delete", {
+      const response = await fetch("https://chatapp-oq5w.onrender.com/api/messages/bulk-delete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
