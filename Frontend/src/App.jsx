@@ -1,12 +1,12 @@
 import React from "react";
-import { AuthProvider } from "./AuthContext";
-import { SocketProvider } from "./SocketContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { SocketProvider } from "./contexts/SocketContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./Login";
-import Register from "./Register";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
 import User from "./User";
-import MessengerLayout from "./MessengerLayout";
-import Home from './Home'
+import MessengerLayout from "./Pages/MessengerLayout";
+import Home from './Pages/Home'
 
 
 const App = () => {

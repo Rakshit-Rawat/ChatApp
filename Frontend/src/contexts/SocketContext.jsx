@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "./AuthContext";
-import { initializeSocket, disconnectSocket, listenForParticipantStatus, requestParticipantStatus } from "./socketService";
+import { useAuth } from "../contexts/AuthContext";
+import { initializeSocket, disconnectSocket, listenForParticipantStatus, requestParticipantStatus } from "../socketService";
 
 const SocketContext = createContext(null);
 

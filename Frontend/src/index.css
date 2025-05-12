@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 
+@keyframes moveBackground {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+
 .loading-animation {
   position: relative;
   display: flex;

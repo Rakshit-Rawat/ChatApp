@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
-import { User, Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 
-const Register = () => {
-  const { register } = useAuth();
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
+const Login = () => {
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,11 +26,16 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const response = await register(formData);
+      const response = await login(formData);
       if (response.success) {
-        setSuccess('Registration successful!');
+        setSuccess('Login successful!');
+        
+        // Delay the redirect so the success message shows first
+        setTimeout(() => {
+          navigate('/chat');
+        }, 2000); // Redirect after 2 seconds (adjust as needed)
       } else {
-        setError(response.message || 'Registration failed. Please try again.');
+        setError(response.message || 'Login failed. Please try again.');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -48,7 +50,7 @@ const Register = () => {
       <div className="fixed inset-0 overflow-hidden z-0">
         {/* Base dark background */}
         <div className="absolute inset-0 bg-zinc-900"></div>
-        
+
         {/* Animated dot grid layer 1 */}
         <div 
           className="absolute inset-0"
@@ -83,48 +85,17 @@ const Register = () => {
           }}
         />
       </div>
-      
-      {/* Global styles for animations */}
-      <style jsx global>{`
-        @keyframes moveBackground {
-          0% {
-            background-position: 0 0;
-          }
-          100% {
-            background-position: 100% 100%;
-          }
-        }
-      `}</style>
-      
       <Card className="w-full max-w-md bg-white shadow-xl border-0 rounded-lg overflow-hidden z-10">
         <CardHeader className="pb-6 pt-8 border-b border-gray-200">
           <CardTitle className="text-2xl font-semibold text-center text-gray-900">
-            Create Account
+            Welcome Back
           </CardTitle>
         </CardHeader>
+
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-gray-700">
-                  Username
-                </Label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    onChange={handleChange}
-                    required
-                    className="pl-10 border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              
+              {/* Email Input */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email
@@ -144,7 +115,8 @@ const Register = () => {
                   />
                 </div>
               </div>
-              
+
+              {/* Password Input */}
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-800">
                   Password
@@ -157,7 +129,7 @@ const Register = () => {
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="Create a secure password"
+                    placeholder="Enter your password"
                     onChange={handleChange}
                     required
                     className="pl-10 border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
@@ -165,18 +137,20 @@ const Register = () => {
                 </div>
               </div>
             </div>
-            
+
+            {/* Submit Button */}
             <div className="pt-2">
               <Button 
                 type="submit" 
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md transition-colors"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Logging in...' : 'Log In'}
               </Button>
             </div>
           </form>
-          
+
+          {/* Success Alert */}
           {success && (
             <div className="mt-5">
               <Alert className="bg-green-50 border border-green-100 text-green-800">
@@ -185,7 +159,8 @@ const Register = () => {
               </Alert>
             </div>
           )}
-          
+
+          {/* Error Alert */}
           {error && (
             <div className="mt-5">
               <Alert className="bg-red-50 border border-red-100 text-red-800">
@@ -195,11 +170,11 @@ const Register = () => {
             </div>
           )}
         </CardContent>
-        
+
         <CardFooter className="flex justify-center py-6 border-t border-gray-100 text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
-            Sign in
+          Don't have an account?{' '}
+          <Link to="/register" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
+            Create one
           </Link>
         </CardFooter>
       </Card>
@@ -207,4 +182,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
