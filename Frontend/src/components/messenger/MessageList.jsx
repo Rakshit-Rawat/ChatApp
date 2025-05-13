@@ -12,22 +12,19 @@ const MessageList = ({
   toggleMessageSelection, 
   messagesEndRef 
 }) => {
-  // 1. Spinner comes first
+  
   if (messagesLoading) {
     return <LoadingSpinner message="Loading messages..." />;
   }
 
-  // 2. If chat isn't selected (user hasn't clicked a chat)
+  
   if (!selectedChat) {
     return null;
   }
 
-  // 3. If messages are loaded but empty
   if (messages.length === 0) {
     return <EmptyConvo selectedChat={selectedChat} />;
   }
-
-  // 4. Render messages normally
   return (
     <div 
       className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-blue-50 to-indigo-50 scrollbar 

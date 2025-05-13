@@ -8,7 +8,7 @@ const MessageInput = ({ selectedChat, newMessage, setNewMessage, handleSendMessa
   const handleKeyDown = (e) => {
     if (e.code === "Enter") {
       e.preventDefault();
-      handleSendMessage();
+      handleSendMessage(newMessage,setNewMessage);
     }
   };
 
@@ -31,7 +31,7 @@ const MessageInput = ({ selectedChat, newMessage, setNewMessage, handleSendMessa
             transition-all duration-300 
             shadow-md hover:shadow-xl 
             active:scale-95"
-          onClick={handleSendMessage}
+          onClick={()=>handleSendMessage(newMessage,setNewMessage)}
         >
           Send
         </button>
