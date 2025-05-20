@@ -1,12 +1,12 @@
 const { Server } = require("socket.io");
 const User = require("./Models/User");
 
-const onlineUsers = new Map(); // Map to associate username with socketId
+const onlineUsers = new Map(); 
 
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", // Update with your frontend URL
+      origin: "http://localhost:5173", 
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -14,7 +14,7 @@ const initializeSocket = (server) => {
 
 
   io.on("connection", (socket) => {
-    // const { userId } = socket.id;
+   
 
     // Handle user registration with username
     socket.on("user-connected", ({ userId, username }) => {

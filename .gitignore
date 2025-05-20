@@ -1,11 +1,12 @@
 
 # Frontend (React)
-frontend/node_modules/
-frontend/build/
-frontend/.env
+Frontend/node_modules/
+Frontend/build/
+Frontend/.env
+
 
 # Backend (Node.js/Express)
-backend/node_modules/
-backend/.env
+Backend/node_modules/
+Backend/.env
 
 git remote add origin https://github.com/Saul-G00dman/ChatApp

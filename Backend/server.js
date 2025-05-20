@@ -9,7 +9,7 @@ const connectDB = require("./db");
 const {initializeSocket} = require("./socket");
 const authRoute = require("./Routes/authRoute");
 const userRoute = require("./Routes/userRoute");
-const conversationRoute = require("./Routes/conversationRoute"); // Import the conversation routes
+const conversationRoute = require("./Routes/conversationRoute"); 
 const messageRoute=require("./Routes/messageRoute")
 
 const PORT = process.env.PORT || 6000;
@@ -24,7 +24,7 @@ app.use(cors({origin: ['http://localhost:5173','https://buzz-link-azure.vercel.a
 
 app.use("/auth", authRoute);
 app.use("/api/user", userRoute);
-app.use("/api/conversation", conversationRoute); // Use the conversation routes
+app.use("/api/conversation", conversationRoute);
 app.use("/api/messages",messageRoute)
 
 initializeSocket(server);
