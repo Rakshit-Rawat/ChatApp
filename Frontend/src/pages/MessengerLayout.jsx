@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 import axios from "axios";
-
 import ProfileSection from "../components/messenger/ProfileSection";
 import SearchSection from "../components/messenger/SearchSection";
 import ChatList from "../components/messenger/ChatList";
@@ -12,12 +11,14 @@ import MessageList from "../components/messenger/MessageList";
 import ChatHeader from "../components/messenger/ChatHeader";
 import EmptyState from "../components/ui/EmptyState";
 
+
 import useChatHeaderHeight from "../hooks/useChatHeaderHeight";
 import useAutoScrollToBottom from "../hooks/useAutoScrollToBottom ";
 import useAuthRedirect from "../hooks/useAuthRedirect";
 import useSocketMessageHandler from "../hooks/useSocketMessageHandler";
 import useSocketUserStatusHandler from "../hooks/useSocketUserStatusHandler";
-import useChatHandlers from "@/hooks/useChatHandlers";
+import useChatHandlers from "../hooks/useChatHandlers";
+
 
 const MessengerLayout = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -35,6 +36,8 @@ const MessengerLayout = () => {
   const socket = useSocket();
 
   const messagesEndRef = useRef(null);
+
+  const backendUrl=import.meta.env.VITE_BACKEND_URL
 
   //Custom Hooks
 
@@ -72,7 +75,6 @@ const {
   setChats,
   setMessagesLoading,
   setSelectedChat,
-  setParticipantStatus,
   setSelectedMessageIds,
   setShowDeleteConfirmation,
 });
@@ -139,7 +141,7 @@ const {
         if (sortedMessages.length > 0) {
           const latestMsg = sortedMessages[0];
           await axios.patch(
-            `https://chatapp-oq5w.onrender.com/api/conversation/${selectedChat.id}`,
+            `${backendUrl}/api/conversation/${selectedChat.id}`,
             {
               lastMessage: {
                 content: latestMsg.content,
@@ -166,7 +168,7 @@ const {
   const deleteMessagesApi = async (messageIds) => {
     try {
       const response = await axios.delete(
-        "https://chatapp-oq5w.onrender.com/api/messages/bulk-delete",
+        `${backendUrl}/api/messages/bulk-delete`,
         {
           headers: {
             "Content-Type": "application/json",

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Label } from '../components/ui/label';
 import { Link, useNavigate } from 'react-router-dom'; 
 
 const Login = () => {
@@ -29,11 +29,9 @@ const Login = () => {
       const response = await login(formData);
       if (response.success) {
         setSuccess('Login successful!');
-        
-        // Delay the redirect so the success message shows first
         setTimeout(() => {
           navigate('/chat');
-        }, 2000); // Redirect after 2 seconds (adjust as needed)
+        }, 1000); // Redirect after 1 sec
       } else {
         setError(response.message || 'Login failed. Please try again.');
       }

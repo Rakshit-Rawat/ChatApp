@@ -7,13 +7,16 @@ const SearchSection = ({setChats,user}) => {
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    const backendUrl=import.meta.env.VITE_BACKEND_URL
+
       useEffect(() => {
+
     const handler = setTimeout(async () => {
       if (searchQuery.trim()) {
         setIsSearching(true);
         try {
           const response = await axios.get(
-            "https://chatapp-oq5w.onrender.com/api/user/search",
+            `${backendUrl}/api/user/search`,
             {
               params: { q: searchQuery.trim() },
             }
@@ -44,7 +47,7 @@ const SearchSection = ({setChats,user}) => {
     if (!existingChat) {
       try {
         const response = await axios.post(
-          "https://chatapp-oq5w.onrender.com/api/conversation/create",
+          `${backendUrl}/api/conversation/create`,
           {
             participants: [user.username, selectedUser.username],
           },

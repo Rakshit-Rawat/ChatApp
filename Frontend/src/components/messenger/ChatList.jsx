@@ -13,6 +13,7 @@ const ChatList = ({
   user,
   refreshChats,
 }) => {
+  const backendUrl=import.meta.env.VITE_BACKEND_URL;
   useEffect(() => {
     const fetchChats = async () => {
       if (!user?.username) return;
@@ -20,7 +21,7 @@ const ChatList = ({
       try {
         setLoadingChats(true);
         const response = await axios.get(
-          `https://chatapp-oq5w.onrender.com/api/conversation/${user.username}`,
+          `${backendUrl}/api/conversation/${user.username}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,

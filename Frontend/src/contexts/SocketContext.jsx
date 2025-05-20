@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { initializeSocket, disconnectSocket, listenForParticipantStatus, requestParticipantStatus } from "../socketService";
+import { initializeSocket, disconnectSocket } from "../socketService";
 
 const SocketContext = createContext(null);
 
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null); // Store the socket instance
+  const [socket, setSocket] = useState(null); 
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -23,7 +23,7 @@ export const SocketProvider = ({ children }) => {
         user?.username,
         logout
       );
-      setSocket(newSocket); // Save the socket instance in state
+      setSocket(newSocket); 
     }
 
     const handleTabClose = () => {
@@ -39,7 +39,7 @@ export const SocketProvider = ({ children }) => {
       if (!isChatRoute && socket) {
         console.log("Disconnecting socket...");
         disconnectSocket();
-        setSocket(null); // Clear the socket state
+        setSocket(null); 
       }
     };
   }, [location.pathname, user, socket, logout]);

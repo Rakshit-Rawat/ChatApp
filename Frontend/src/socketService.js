@@ -1,22 +1,22 @@
 import { io } from "socket.io-client";
 
+// Singleton socket instance
+let socket; 
+const backendUrl=import.meta.env.VITE_BACKEND_URL
 
-let socket; // Singleton socket instance
-
-const SOCKET_URL = "https://chatapp-oq5w.onrender.com"; // Replace with your backend URL
+const SOCKET_URL = backendUrl; 
 
 // Initialize the socket connection
 export const initializeSocket = (token, userId,username,logout) => {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      auth: { token }, // Attach token for authentication
-      transports: ["websocket"], // Use WebSocket transport for better performance
+      auth: { token }, 
+      transports: ["websocket"], 
     });
 
     // Handle connection
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      // Register user ID on connection
       socket.emit("user-connected", {userId,username});
 
     });
@@ -62,6 +62,6 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     console.log("Socket disconnected");
-    socket = null; // Clear the socket instance
+    socket = null; 
   }
 };

@@ -9,10 +9,12 @@ const useChatHandlers = ({
   setChats,
   setMessagesLoading,
   setSelectedChat,
-  setParticipantStatus,
   setSelectedMessageIds,
   setShowDeleteConfirmation,
 }) => {
+
+  const backendUrl=import.meta.env.VITE_BACKEND_URL
+
   const handleChatSelect = useCallback(async (chat) => {
   
     setSelectedChat((prevChat) => ({
@@ -25,7 +27,7 @@ const useChatHandlers = ({
 
     try {
       const res = await axios.get(
-        `https://chatapp-oq5w.onrender.com/api/messages/${chat.id}`,
+        `${backendUrl}/api/messages/${chat.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -73,7 +75,7 @@ const useChatHandlers = ({
 
     try {
       const { data: savedMessage } = await axios.post(
-        "https://chatapp-oq5w.onrender.com/api/messages",
+        `${backendUrl}/api/messages`,
         messageData,
         {
           headers: {

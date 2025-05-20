@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
+  const backendUrl=import.meta.env.VITE_BACKEND_URL
+
   const [user, setUser] = useState(() => {
     // Get all stored users
     const storedUsers = JSON.parse(localStorage.getItem("storedUsers") || "{}");
@@ -77,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await axios.post(
-        "https://chatapp-oq5w.onrender.com/auth/login",
+        `${backendUrl}/auth/login`,
         credentials,
         {
           withCredentials: true,
@@ -117,9 +120,8 @@ export const AuthProvider = ({ children }) => {
     const username = user?.username;
 
     try {
-      // Make a request to the backend to log out
       await axios.post(
-        "https://chatapp-oq5w.onrender.com/auth/logout",
+        `${backendUrl}/auth/logout`,
         { userId, username },
         {
           withCredentials: true,
@@ -143,7 +145,7 @@ export const AuthProvider = ({ children }) => {
         "Logout failed:",
         error.response?.data?.error || "An error occurred during logout."
       );
-      // Optionally handle the error (e.g., show a notification)
+      
     }
   };
 
