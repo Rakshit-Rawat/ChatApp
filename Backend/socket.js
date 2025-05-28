@@ -1,26 +1,21 @@
 const { Server } = require("socket.io");
 const User = require("./Models/User");
 
-const onlineUsers = new Map(); 
+const onlineUsers = new Map();
 
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", 
+      origin: "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true,
     },
   });
 
-
   io.on("connection", (socket) => {
-   
-
     // Handle user registration with username
     socket.on("user-connected", ({ userId, username }) => {
       if (!userId || !username) return;
-      
-
 
       // Add user to online users map
       onlineUsers.set(username, { userId, socketId: socket.id });
@@ -33,7 +28,7 @@ const initializeSocket = (server) => {
 
     socket.on("check-status", ({ participantUsername }) => {
       const userInfo = onlineUsers.get(participantUsername); // Assuming `onlineUsers` Map
-  
+
       // Emit back the result
       socket.emit("status-response", {
         participantUsername,
@@ -43,33 +38,47 @@ const initializeSocket = (server) => {
 
     // Handle sending messages using more detailed payload
     socket.on("send-message", (messageData) => {
-      const {
-        senderUsername,
-        receiverUsername,
-        message: messageContent,
-        conversationId,
-        senderId,
-        timestamp = new Date().toISOString(),
-      } = messageData;
-    
-      // Get receiver's socket info (not just ID)
-      const receiverInfo = onlineUsers.get(receiverUsername);
-    
-      if (receiverInfo && receiverInfo.socketId) {
-        // Send to specific receiver with complete message details
-        io.to(receiverInfo.socketId).emit("receive-message", {
-          conversationId,
-          senderId,
-          content: messageContent,  // Keep using messageContent 
-          senderUsername,
-          timestamp,
-        });
-    
-        console.log(`Message sent to ${receiverUsername}`);
-      } else {
-        console.log(`User ${receiverUsername} is offline`);
-      }
+  const {
+    senderUsername,
+    receiverUsername,
+    message: messageContent,
+    conversationId,
+    senderId,
+    timestamp = new Date().toISOString(),
+  } = messageData;
+
+  const receiverInfo = onlineUsers.get(receiverUsername);
+
+  const newMessagePayload = {
+    conversationId,
+    lastMessage: {
+      content: messageContent,
+      senderId,
+      senderUsername,
+      timestamp,
+    },
+  };
+
+  // Emit to receiver
+  if (receiverInfo && receiverInfo.socketId) {
+    io.to(receiverInfo.socketId).emit("receive-message", {
+      conversationId,
+      senderId,
+      content: messageContent,
+      senderUsername,
+      timestamp,
     });
+
+    io.to(receiverInfo.socketId).emit("new-message", newMessagePayload);
+    console.log(`Message sent to ${receiverUsername}`);
+  } else {
+    console.log(`User ${receiverUsername} is offline`);
+  }
+
+  // Emit to sender (so their own chat list updates too)
+  io.to(socket.id).emit("new-message", newMessagePayload);
+});
+
 
     // Handle user disconnection
     socket.on("user-disconnected", (username) => {
@@ -101,7 +110,10 @@ const initializeSocket = (server) => {
         // Call markUserOffline function
         markUserOffline(disconnectedUser);
       }
-      io.emit("user-status-update", { username: disconnectedUser, status: "offline" });
+      io.emit("user-status-update", {
+        username: disconnectedUser,
+        status: "offline",
+      });
     });
   });
 
@@ -125,4 +137,4 @@ const initializeSocket = (server) => {
   };
 };
 
-module.exports = {initializeSocket,onlineUsers};
+module.exports = { initializeSocket, onlineUsers };

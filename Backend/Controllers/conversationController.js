@@ -1,35 +1,34 @@
-// server/routes/conversations.js
 const Conversation = require("../Models/Conversation");
+const User = require("../Models/User"); 
 
 // Get user's conversations
 const conversations = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const conversations = await Conversation.find({
-      participants: userId,
-    })
-      .populate("participants")
-      .populate("lastMessage.sender");
+    const username = req.params.userId;
 
-    // Transform conversations to match frontend requirements
+    const currentUser = await User.findOne({ username: username });
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const conversations = await Conversation.find({
+      participants: currentUser._id,
+    })
+      .populate("participants", "username avatar")
+      .sort({ "lastMessage.timestamp": -1 });
+
     const formattedConversations = conversations.map((conv) => {
-      // Find the other participant (not the requesting user)
       const otherParticipant = conv.participants.find(
-        (p) => p._id.toString() !== userId
+        (p) => p.username !== username
       );
 
       return {
         _id: conv._id,
-        username: otherParticipant?.username || "Unknown User",
-        avatar: otherParticipant?.avatar, // If you have avatar in your User model
-        participants: conv.participants.map((p) => p._id),
-        lastMessage: conv.lastMessage
-          ? {
-              content: conv.lastMessage.content,
-              timestamp: conv.lastMessage.timestamp,
-              sender: conv.lastMessage.sender._id.toString(),
-            }
-          : null,
+        participants: conv.participants,
+        lastMessage: conv.lastMessage || {
+          content: "Start a conversation",
+          timestamp: new Date(),
+        },
       };
     });
 
@@ -40,16 +39,17 @@ const conversations = async (req, res) => {
   }
 };
 
+
 //Create a new Convo
 const createConversation = async (req, res) => {
-  const { participants } = req.body; // Change to an array of usernames
+  const { participants } = req.body; 
 
   if (!participants || participants.length !== 2) {
     return res.status(400).json({ error: "Two participants are required" });
   }
 
   try {
-    // Find user IDs based on usernames
+ 
     const participantUsers = await User.find({
       username: { $in: participants },
     });
@@ -62,29 +62,30 @@ const createConversation = async (req, res) => {
     let conversation = await Conversation.findOne({
       participants: {
         $all: participantUsers.map((u) => u._id),
+        $size: 2, // Ensure exactly 2 participants
       },
-    }).populate("participants");
+    }).populate("participants", "username avatar");
 
     if (!conversation) {
       conversation = new Conversation({
         participants: participantUsers.map((u) => u._id),
+        lastMessage: {
+          content: "Start a conversation",
+          timestamp: new Date(),
+        },
       });
       await conversation.save();
-      conversation = await conversation.populate("participants");
+      conversation = await conversation.populate(
+        "participants",
+        "username avatar"
+      );
     }
 
-    // Format response
+    // Format response to match what frontend expects
     const formattedConversation = {
-      id: conversation._id,
-      participants: conversation.participants.map((p) => p.username),
-      name: participants.find((p) => p !== user.username),
-      avatar: conversation.participants.find(
-        (p) => p.username !== user.username
-      )?.avatar,
-      lastMessage: conversation.lastMessage?.content || "Start a conversation",
-      time: conversation.lastMessage?.timestamp
-        ? new Date(conversation.lastMessage.timestamp).toLocaleTimeString()
-        : "Just now",
+      _id: conversation._id,
+      participants: conversation.participants,
+      lastMessage: conversation.lastMessage,
     };
 
     res.json(formattedConversation);

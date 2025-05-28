@@ -2,15 +2,15 @@ const User = require("../Models/User");
 
 const search = async (req, res) => {
   try {
-    const { q } = req.query; // Get the query parameter from the URL
+    const { q } = req.query;
     if (!q || !q.trim()) {
       return res.status(400).json({ error: "Query parameter is required" });
     }
 
-    // Perform a case-insensitive search on the username field only
+   
     const users = await User.find({
       username: { $regex: q.trim(), $options: "i" },
-    }).select("username email avatar"); // Select only necessary fields
+    }).select("username email avatar"); 
 
     res.json(users);
   } catch (error) {
