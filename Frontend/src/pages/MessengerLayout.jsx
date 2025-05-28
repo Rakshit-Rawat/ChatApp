@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 import axios from "axios";
@@ -11,14 +11,12 @@ import MessageList from "../components/messenger/MessageList";
 import ChatHeader from "../components/messenger/ChatHeader";
 import EmptyState from "../components/ui/EmptyState";
 
-
 import useChatHeaderHeight from "../hooks/useChatHeaderHeight";
 import useAutoScrollToBottom from "../hooks/useAutoScrollToBottom ";
 import useAuthRedirect from "../hooks/useAuthRedirect";
 import useSocketMessageHandler from "../hooks/useSocketMessageHandler";
 import useSocketUserStatusHandler from "../hooks/useSocketUserStatusHandler";
 import useChatHandlers from "../hooks/useChatHandlers";
-
 
 const MessengerLayout = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -30,20 +28,25 @@ const MessengerLayout = () => {
   const [newMessage, setNewMessage] = useState("");
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [refreshChats, setRefreshChats] = useState(false);
+  const [refreshChats, setRefreshChats] = useState(0); // Changed to number for better triggering
 
   const { user, setUser, logout } = useAuth();
   const socket = useSocket();
 
   const messagesEndRef = useRef(null);
 
-  const backendUrl=import.meta.env.VITE_BACKEND_URL
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  // Function to trigger chat refresh
+  const triggerChatRefresh = useCallback(() => {
+    setRefreshChats(prev => prev + 1);
+  }, []);
 
   //Custom Hooks
-
   const { chatHeaderRef, chatheaderHeight } = useChatHeaderHeight();
   useAutoScrollToBottom(messagesEndRef, [messages]);
   useAuthRedirect(user);
+  
   useSocketMessageHandler({
     socket,
     user,
@@ -60,25 +63,25 @@ const MessengerLayout = () => {
     setParticipantStatus,
   });
 
+  const {
+    handleChatSelect,
+    handleSendMessage,
+    toggleMessageSelection,
+    clearSelection,
+    handleDeleteMessages,
+  } = useChatHandlers({
+    user,
+    socket,
+    selectedChat,
+    setMessages,
+    setChats,
+    setMessagesLoading,
+    setSelectedChat,
+    setSelectedMessageIds,
+    setShowDeleteConfirmation,
+    triggerChatRefresh, 
+  });
 
-const {
-  handleChatSelect,
-  handleSendMessage,
-  toggleMessageSelection,
-  clearSelection,
-  handleDeleteMessages,
-} = useChatHandlers({
-  user,
-  socket,
-  selectedChat,
-  setMessages,
-  setChats,
-  setMessagesLoading,
-  setSelectedChat,
-  setSelectedMessageIds,
-  setShowDeleteConfirmation,
-});
-  
   const handleLogout = async () => {
     if (socket) {
       socket.emit("user-disconnected", user?.username);
@@ -157,6 +160,9 @@ const {
             }
           );
         }
+
+        // Trigger chat list refresh after deletion
+        triggerChatRefresh();
       } else {
         await deleteMessagesApi(idsToDelete);
       }
@@ -193,7 +199,12 @@ const {
         <ProfileSection user={user} handleLogout={handleLogout} />
 
         {/* Search Section */}
-        <SearchSection setChats={setChats} user={user} />
+        <SearchSection 
+          setChats={setChats} 
+          user={user} 
+          triggerChatRefresh={triggerChatRefresh} 
+        />
+        
         {/* Chat List */}
         <ChatList
           chats={chats}

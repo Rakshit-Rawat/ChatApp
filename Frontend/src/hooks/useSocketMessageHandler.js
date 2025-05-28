@@ -9,44 +9,89 @@ const useSocketMessageHandler = ({
   setParticipantStatus,
 }) => {
   useEffect(() => {
-    if (!socket || !user?.username) return;
+    if (!socket || !user) return;
 
-    console.log("Connecting socket with user:", user.username);
+    // Real-time message handler for messages in the open chat
+    const handleReceiveMessage = (message) => {
+      console.log("Received message:", message);
+      if (selectedChat?.id === message.conversationId) {
+        setMessages((prev) => {
+          // Avoid duplicates
+          const exists = prev.some((msg) => msg._id === message._id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
+      }
+    };
 
-    socket.on("receive-message", (messageData) => {
-      setMessages((prev) => [...prev, messageData]);
+    //  Enhanced chat list update with better sorting
+    const handleNewMessage = ({ conversationId, lastMessage }) => {
+      console.log("New message for chat list:", {
+        conversationId,
+        lastMessage,
+      });
 
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.id === messageData.conversationId
-            ? {
-                ...chat,
-                lastMessage: messageData.content,
-                time: new Date(messageData.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                }),
-              }
-            : chat
-        )
-      );
-    });
+      setChats((prevChats) => {
+        // Check if this conversation already exists in the chat list
+        const existingChatIndex = prevChats.findIndex(
+          (chat) => chat.id === conversationId
+        );
 
-    socket.on("status-response", ({ participantUsername, status }) => {
-      console.log(
-        `Status response received: ${participantUsername} is ${status}`
-      );
-      if (selectedChat && participantUsername === selectedChat.name) {
+        if (existingChatIndex !== -1) {
+          // Update existing chat
+          const updatedChats = [...prevChats];
+          updatedChats[existingChatIndex] = {
+            ...updatedChats[existingChatIndex],
+            lastMessage: lastMessage.content,
+            time: new Date(lastMessage.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            sortTimestamp: new Date(lastMessage.timestamp).getTime(),
+          };
+
+          // Sort by most recent message first
+          return updatedChats.sort((a, b) => {
+            const timeA =
+              a.sortTimestamp || new Date(a.time || 0).getTime() || 0;
+            const timeB =
+              b.sortTimestamp || new Date(b.time || 0).getTime() || 0;
+            return timeB - timeA;
+          });
+        }
+
+        // If chat doesn't exist, we might need to refetch the chat list
+        // This can happen when a new conversation is created
+        return prevChats;
+      });
+    };
+
+    // Status update handler
+    const handleStatusResponse = ({ participantUsername, status }) => {
+      console.log(`Status for ${participantUsername}: ${status}`);
+      setParticipantStatus(status);
+    };
+
+    const handleUserStatusUpdate = ({ username, status }) => {
+      console.log(`User ${username} is now ${status}`);
+      if (selectedChat?.name === username) {
         setParticipantStatus(status);
       }
-    });
+    };
+
+    socket.on("receive-message", handleReceiveMessage);
+    socket.on("new-message", handleNewMessage);
+    socket.on("status-response", handleStatusResponse);
+    socket.on("user-status-update", handleUserStatusUpdate);
 
     return () => {
-      socket.off("receive-message");
-      socket.off("status-response");
+      socket.off("receive-message", handleReceiveMessage);
+      socket.off("new-message", handleNewMessage);
+      socket.off("status-response", handleStatusResponse);
+      socket.off("user-status-update", handleUserStatusUpdate);
     };
-  }, [socket, user, selectedChat]);
+  }, [socket, user, selectedChat, setMessages, setChats, setParticipantStatus]);
 };
 
 export default useSocketMessageHandler;
