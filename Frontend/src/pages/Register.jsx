@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Button } from '../components/ui/button';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Label } from '../components/ui/label';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useSetUser } from "@/stores/authStore";
+import { User, Mail, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Label } from "../components/ui/label";
+import { Link } from "react-router-dom";
 
 const Register = () => {
-  const { register } = useAuth();
+  const register = useSetUser();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -27,16 +33,16 @@ const Register = () => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     try {
       const response = await register(formData);
       if (response.success) {
-        setSuccess('Registration successful!');
+        setSuccess("Registration successful!");
       } else {
-        setError(response.message || 'Registration failed. Please try again.');
+        setError(response.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -48,42 +54,45 @@ const Register = () => {
       <div className="fixed inset-0 overflow-hidden z-0">
         {/* Base dark background */}
         <div className="absolute inset-0 bg-zinc-900"></div>
-        
+
         {/* Animated dot grid layer 1 */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(100, 100, 100, 0.5) 1px, transparent 0)',
-            backgroundSize: '30px 30px',
-            backgroundPosition: '0 0',
-            transform: 'rotate(30deg) scale(1.5)',
+            backgroundImage:
+              "radial-gradient(circle at 10px 10px, rgba(100, 100, 100, 0.5) 1px, transparent 0)",
+            backgroundSize: "30px 30px",
+            backgroundPosition: "0 0",
+            transform: "rotate(30deg) scale(1.5)",
             opacity: 0.7,
-            animation: 'moveBackground 120s linear infinite'
+            animation: "moveBackground 120s linear infinite",
           }}
         />
-        
+
         {/* Animated dot grid layer 2 */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            backgroundImage: 'radial-gradient(circle at 15px 15px, rgba(120, 120, 120, 0.3) 1px, transparent 0)',
-            backgroundSize: '40px 40px',
-            backgroundPosition: '10px 10px',
-            transform: 'rotate(60deg) scale(1.3)',
+            backgroundImage:
+              "radial-gradient(circle at 15px 15px, rgba(120, 120, 120, 0.3) 1px, transparent 0)",
+            backgroundSize: "40px 40px",
+            backgroundPosition: "10px 10px",
+            transform: "rotate(60deg) scale(1.3)",
             opacity: 0.5,
-            animation: 'moveBackground 180s linear infinite reverse'
+            animation: "moveBackground 180s linear infinite reverse",
           }}
         />
-        
+
         {/* Subtle gradient overlay */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at center, rgba(30, 30, 30, 0) 0%, rgba(10, 10, 10, 0.8) 100%)'
+            background:
+              "radial-gradient(circle at center, rgba(30, 30, 30, 0) 0%, rgba(10, 10, 10, 0.8) 100%)",
           }}
         />
       </div>
-      
+
       <Card className="w-full max-w-md bg-white shadow-xl border-0 rounded-lg overflow-hidden z-10">
         <CardHeader className="pb-6 pt-8 border-b border-gray-200">
           <CardTitle className="text-2xl font-semibold text-center text-gray-900">
@@ -94,7 +103,10 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="username"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Username
                 </Label>
                 <div className="relative">
@@ -112,9 +124,12 @@ const Register = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -132,9 +147,12 @@ const Register = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-800">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-800"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -153,18 +171,18 @@ const Register = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="pt-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md transition-colors"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </div>
           </form>
-          
+
           {success && (
             <div className="mt-5">
               <Alert className="bg-green-50 border border-green-100 text-green-800">
@@ -173,7 +191,7 @@ const Register = () => {
               </Alert>
             </div>
           )}
-          
+
           {error && (
             <div className="mt-5">
               <Alert className="bg-red-50 border border-red-100 text-red-800">
@@ -183,10 +201,13 @@ const Register = () => {
             </div>
           )}
         </CardContent>
-        
+
         <CardFooter className="flex justify-center py-6 border-t border-gray-100 text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors"
+          >
             Sign in
           </Link>
         </CardFooter>

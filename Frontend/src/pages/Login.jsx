@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useLogin } from '@/stores/authStore';
 import { Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Label } from '../components/ui/label';
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom' 
 
 const Login = () => {
-  const { login } = useAuth();
+  const login= useLogin();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);

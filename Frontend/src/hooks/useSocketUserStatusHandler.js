@@ -1,11 +1,14 @@
 import { useEffect } from "react";
+import { useSocket } from "@/stores/socketStore";
 
 const useSocketUserStatusHandler = ({
-  socket,
+  
   selectedChat,
   setChats,
   setParticipantStatus,
 }) => {
+
+  const socket=useSocket()  
   useEffect(() => {
     if (!socket) return;
 

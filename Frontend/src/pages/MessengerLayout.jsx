@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { useSocket } from "../contexts/SocketContext";
+import { useAuthUser, useLogout, useSetUser } from "../stores/authStore";
+import { useSocket } from "../stores/socketStore";
 import axios from "axios";
 import ProfileSection from "../components/messenger/ProfileSection";
 import SearchSection from "../components/messenger/SearchSection";
@@ -28,9 +28,12 @@ const MessengerLayout = () => {
   const [newMessage, setNewMessage] = useState("");
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [refreshChats, setRefreshChats] = useState(0); // Changed to number for better triggering
+  const [refreshChats, setRefreshChats] = useState(0);
 
-  const { user, setUser, logout } = useAuth();
+  const user = useAuthUser();
+  const logout = useLogout();
+  const setUser = useSetUser();
+
   const socket = useSocket();
 
   const messagesEndRef = useRef(null);
@@ -39,17 +42,17 @@ const MessengerLayout = () => {
 
   // Function to trigger chat refresh
   const triggerChatRefresh = useCallback(() => {
-    setRefreshChats(prev => prev + 1);
+    setRefreshChats((prev) => prev + 1);
   }, []);
 
   //Custom Hooks
   const { chatHeaderRef, chatheaderHeight } = useChatHeaderHeight();
   useAutoScrollToBottom(messagesEndRef, [messages]);
   useAuthRedirect(user);
-  
+
   useSocketMessageHandler({
-    socket,
-    user,
+    
+    
     selectedChat,
     setMessages,
     setChats,
@@ -57,7 +60,7 @@ const MessengerLayout = () => {
   });
 
   useSocketUserStatusHandler({
-    socket,
+    
     selectedChat,
     setChats,
     setParticipantStatus,
@@ -71,7 +74,7 @@ const MessengerLayout = () => {
     handleDeleteMessages,
   } = useChatHandlers({
     user,
-    socket,
+    
     selectedChat,
     setMessages,
     setChats,
@@ -79,7 +82,7 @@ const MessengerLayout = () => {
     setSelectedChat,
     setSelectedMessageIds,
     setShowDeleteConfirmation,
-    triggerChatRefresh, 
+    triggerChatRefresh,
   });
 
   const handleLogout = async () => {
@@ -199,12 +202,12 @@ const MessengerLayout = () => {
         <ProfileSection user={user} handleLogout={handleLogout} />
 
         {/* Search Section */}
-        <SearchSection 
-          setChats={setChats} 
-          user={user} 
-          triggerChatRefresh={triggerChatRefresh} 
+        <SearchSection
+          setChats={setChats}
+          user={user}
+          triggerChatRefresh={triggerChatRefresh}
         />
-        
+
         {/* Chat List */}
         <ChatList
           chats={chats}

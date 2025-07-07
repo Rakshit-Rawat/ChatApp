@@ -1,13 +1,15 @@
 import { useEffect } from "react";
+import { useSocket } from "@/stores/socketStore";
+import { useAuthUser } from "@/stores/authStore";
 
 const useSocketMessageHandler = ({
-  socket,
-  user,
   selectedChat,
   setMessages,
   setChats,
   setParticipantStatus,
 }) => {
+  const socket = useSocket();
+  const user = useAuthUser();
   useEffect(() => {
     if (!socket || !user) return;
 
