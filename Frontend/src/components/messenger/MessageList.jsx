@@ -1,23 +1,29 @@
-import React from 'react';
-import Message from './Message';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import EmptyConvo from '../ui/EmptyConvo';
+import React from "react";
+import Message from "./Message";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import EmptyConvo from "../ui/EmptyConvo";
 
-const MessageList = ({ 
-  messagesLoading, 
-  selectedChat, 
-  messages, 
-  user, 
-  selectedMessageIds, 
-  toggleMessageSelection, 
-  messagesEndRef 
-}) => {
-  
+import {
+  useMessages,
+  useMessagesLoading,
+  useSelectedChat,
+  useSelectedMessageIds,
+  useToggleMessageSelection,
+} from "../../stores/chatStore";
+import { useAuthUser } from "../../stores/authStore";
+
+const MessageList = ({  messagesEndRef }) => {
+  const messages = useMessages();
+  const messagesLoading = useMessagesLoading();
+  const selectedChat = useSelectedChat();
+  const selectedMessageIds = useSelectedMessageIds();
+  const toggleMessageSelection = useToggleMessageSelection();
+  const user = useAuthUser();
+
   if (messagesLoading) {
     return <LoadingSpinner message="Loading messages..." />;
   }
 
-  
   if (!selectedChat) {
     return null;
   }
@@ -25,18 +31,20 @@ const MessageList = ({
   if (messages.length === 0) {
     return <EmptyConvo selectedChat={selectedChat} />;
   }
+
   return (
-    <div 
+    <div
       className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-blue-50 to-indigo-50 scrollbar 
         scrollbar-thumb-black scrollbar-track-black"
     >
       <div className="space-y-4">
         {messages.map((msg, index) => {
-          const isCurrentUser = msg.senderId === user.id || msg.senderUsername === user.username;
+          const isCurrentUser =
+            msg.senderId === user.id || msg.senderUsername === user.username;
           const isSelected = selectedMessageIds.includes(msg._id);
 
           return (
-            <Message 
+            <Message
               key={msg._id || index}
               message={msg}
               isCurrentUser={isCurrentUser}

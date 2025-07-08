@@ -1,11 +1,16 @@
 import React,{useState,useEffect} from 'react'
 import { Search } from 'lucide-react';
 import axios from 'axios';
+import { useSetChats } from '../../stores/chatStore';
+import { useAuthUser } from '../../stores/authStore';
 
-const SearchSection = ({setChats,user}) => {
+const SearchSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
+
+    const user=useAuthUser()
+    const setChats=useSetChats()
 
     const backendUrl=import.meta.env.VITE_BACKEND_URL
 

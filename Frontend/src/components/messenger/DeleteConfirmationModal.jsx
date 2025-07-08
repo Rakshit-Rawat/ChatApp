@@ -1,13 +1,19 @@
 import React from "react";
+import {
+  useShowDeleteConfirmation,
+  useSetShowDeleteConfirmation,
+  useSelectedMessageIds,
+  useConfirmDeleteMessages,
+} from "../../stores/chatStore"; 
 
-const DeleteConfirmationModal = ({ 
-  showDeleteConfirmation, 
-  setShowDeleteConfirmation, 
-  selectedMessageIds, 
-  confirmDeleteMessages 
-}) => {
+const DeleteConfirmationModal = () => {
+  const showDeleteConfirmation = useShowDeleteConfirmation();
+  const setShowDeleteConfirmation = useSetShowDeleteConfirmation();
+  const selectedMessageIds = useSelectedMessageIds();
+  const confirmDeleteMessages = useConfirmDeleteMessages();
+
   if (!showDeleteConfirmation) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full animate-fade-in-up">

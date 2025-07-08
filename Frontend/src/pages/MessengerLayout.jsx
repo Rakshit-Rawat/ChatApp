@@ -14,25 +14,21 @@ import EmptyState from "../components/ui/EmptyState";
 import useChatHeaderHeight from "../hooks/useChatHeaderHeight";
 import useAutoScrollToBottom from "../hooks/useAutoScrollToBottom ";
 import useAuthRedirect from "../hooks/useAuthRedirect";
-import useSocketMessageHandler from "../hooks/useSocketMessageHandler";
-import useSocketUserStatusHandler from "../hooks/useSocketUserStatusHandler";
-import useChatHandlers from "../hooks/useChatHandlers";
+
+import {
+  useMessages,
+  useSelectedChat,
+  useShowDeleteConfirmation,
+} from "../stores/chatStore";
 
 const MessengerLayout = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [chats, setChats] = useState([]);
-  const [participantStatus, setParticipantStatus] = useState("offline");
-  const [loadingChats, setLoadingChats] = useState(true);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [refreshChats, setRefreshChats] = useState(0);
-
   const user = useAuthUser();
   const logout = useLogout();
   const setUser = useSetUser();
+
+  const messages = useMessages();
+  const selectedChat = useSelectedChat();
+  const showDeleteConfirmation = useShowDeleteConfirmation();
 
   const socket = useSocket();
 
@@ -49,41 +45,6 @@ const MessengerLayout = () => {
   const { chatHeaderRef, chatheaderHeight } = useChatHeaderHeight();
   useAutoScrollToBottom(messagesEndRef, [messages]);
   useAuthRedirect(user);
-
-  useSocketMessageHandler({
-    
-    
-    selectedChat,
-    setMessages,
-    setChats,
-    setParticipantStatus,
-  });
-
-  useSocketUserStatusHandler({
-    
-    selectedChat,
-    setChats,
-    setParticipantStatus,
-  });
-
-  const {
-    handleChatSelect,
-    handleSendMessage,
-    toggleMessageSelection,
-    clearSelection,
-    handleDeleteMessages,
-  } = useChatHandlers({
-    user,
-    
-    selectedChat,
-    setMessages,
-    setChats,
-    setMessagesLoading,
-    setSelectedChat,
-    setSelectedMessageIds,
-    setShowDeleteConfirmation,
-    triggerChatRefresh,
-  });
 
   const handleLogout = async () => {
     if (socket) {
@@ -202,22 +163,10 @@ const MessengerLayout = () => {
         <ProfileSection user={user} handleLogout={handleLogout} />
 
         {/* Search Section */}
-        <SearchSection
-          setChats={setChats}
-          user={user}
-          triggerChatRefresh={triggerChatRefresh}
-        />
+        <SearchSection />
 
         {/* Chat List */}
-        <ChatList
-          chats={chats}
-          setChats={setChats}
-          handleChatSelect={handleChatSelect}
-          loadingChats={loadingChats}
-          setLoadingChats={setLoadingChats}
-          user={user}
-          refreshChats={refreshChats}
-        />
+        <ChatList />
       </div>
 
       {/* Chat Area */}
@@ -226,33 +175,14 @@ const MessengerLayout = () => {
           <>
             {/* Chat Header for selected chat */}
             <div ref={chatHeaderRef}>
-              <ChatHeader
-                selectedChat={selectedChat}
-                participantStatus={participantStatus}
-                selectedMessageIds={selectedMessageIds}
-                handleDeleteMessages={handleDeleteMessages}
-                clearSelection={clearSelection}
-              />
+              <ChatHeader />
             </div>
 
             {/* Messages */}
-            <MessageList
-              user={user}
-              messages={messages}
-              selectedChat={selectedChat}
-              messagesLoading={messagesLoading}
-              selectedMessageIds={selectedMessageIds}
-              toggleMessageSelection={toggleMessageSelection}
-              messagesEndRef={messagesEndRef}
-            />
+            <MessageList messagesEndRef={messagesEndRef} />
 
             {/* Message Input */}
-            <MessageInput
-              selectedChat={selectedChat}
-              newMessage={newMessage}
-              setNewMessage={setNewMessage}
-              handleSendMessage={handleSendMessage}
-            />
+            <MessageInput />
           </>
         ) : (
           // Empty state when no chat is selected - takes full height
@@ -262,14 +192,7 @@ const MessengerLayout = () => {
         )}
 
         {/* Confirmation Modal - outside the conditional rendering */}
-        {showDeleteConfirmation && (
-          <DeleteConfirmationModal
-            showDeleteConfirmation={showDeleteConfirmation}
-            selectedMessageIds={selectedMessageIds}
-            setShowDeleteConfirmation={setShowDeleteConfirmation}
-            confirmDeleteMessages={confirmDeleteMessages}
-          />
-        )}
+        {showDeleteConfirmation && <DeleteConfirmationModal />}
       </div>
     </div>
   );

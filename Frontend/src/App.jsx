@@ -9,16 +9,13 @@ import Home from "./pages/Home";
 const App = () => {
   return (
     <Router>
-      
-        <SocketManager/>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/chat" element={<MessengerLayout />} />
-          </Routes>{" "}
-        
-      
+      <SocketManager />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/chat" element={<MessengerLayout />} />
+      </Routes>
     </Router>
   );
 };

@@ -1,6 +1,23 @@
-import React from 'react';
+import React from "react";
+import {
+  useSelectedChat,
+  useParticipantStatus,
+  useSelectedMessageIds,
+  useHandleDeleteMessages,
+  useClearSelection,
+} from "../../stores/chatStore";
 
-const ChatHeader = ({ selectedChat, participantStatus, selectedMessageIds, handleDeleteMessages, clearSelection }) => {
+const ChatHeader = () => {
+  const selectedChat = useSelectedChat();
+  const participantStatus = useParticipantStatus();
+  const selectedMessageIds = useSelectedMessageIds();
+  const handleDeleteMessages = useHandleDeleteMessages();
+  const clearSelection = useClearSelection();
+
+
+
+  if (!selectedChat) return null;
+
   return (
     <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm border-b">
       <div className="flex items-center">
@@ -21,9 +38,7 @@ const ChatHeader = ({ selectedChat, participantStatus, selectedMessageIds, handl
           <div className="font-bold text-lg text-gray-800 leading-tight">
             {selectedChat.name}
           </div>
-          <div className="text-sm text-gray-500 mt-1">
-            {participantStatus}
-          </div>
+          <div className="text-sm text-gray-500 mt-1">{participantStatus}</div>
         </div>
 
         <div className="ml-auto flex items-center space-x-3">

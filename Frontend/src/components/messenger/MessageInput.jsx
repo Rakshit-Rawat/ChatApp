@@ -1,15 +1,32 @@
-import React from 'react';
+import React from "react";
+import {
+  useSelectedChat,
+  useNewMessage,
+  useSetNewMessage,
+  useHandleSendMessage,
+} from "@/stores/chatStore";
+import { useAuthUser } from "../../stores/authStore";
+import { useSocket } from "../../stores/socketStore";
 
-const MessageInput = ({ selectedChat, newMessage, setNewMessage, handleSendMessage }) => {
-  if (!selectedChat) {
-    return null;
-  }
+const MessageInput = () => {
+  const selectedChat = useSelectedChat();
+  const newMessage = useNewMessage();
+  const setNewMessage = useSetNewMessage();
+  const handleSendMessage = useHandleSendMessage();
+  const user = useAuthUser();
+  const socket = useSocket();
+
+  if (!selectedChat) return null;
 
   const handleKeyDown = (e) => {
     if (e.code === "Enter") {
       e.preventDefault();
-      handleSendMessage(newMessage,setNewMessage);
+      handleSendMessage(user, socket);
     }
+  };
+
+  const handleClickSend = () => {
+    handleSendMessage(user, socket);
   };
 
   return (
@@ -24,6 +41,7 @@ const MessageInput = ({ selectedChat, newMessage, setNewMessage, handleSendMessa
           className="flex-1 px-4 py-2 bg-transparent text-gray-700 placeholder-gray-400 rounded-full focus:outline-none"
         />
         <button
+          onClick={handleClickSend}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white 
             px-6 py-2 rounded-full 
             hover:from-blue-600 hover:to-purple-700 
@@ -31,7 +49,6 @@ const MessageInput = ({ selectedChat, newMessage, setNewMessage, handleSendMessa
             transition-all duration-300 
             shadow-md hover:shadow-xl 
             active:scale-95"
-          onClick={()=>handleSendMessage(newMessage,setNewMessage)}
         >
           Send
         </button>

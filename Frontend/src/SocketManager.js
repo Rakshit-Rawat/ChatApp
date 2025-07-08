@@ -1,21 +1,27 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useSocket,useInitializeSocket,useDisconnectSocket } from "./stores/socketStore"
-import { useAuthUser, useLogout } from "./stores/authStore";
+import { useSocket, useInitializeSocket, useDisconnectSocket } from "./stores/socketStore";
+import { useAuthUser, useLogout, useInitializeAuth } from "./stores/authStore";
 
 const SocketManager = () => {
   const location = useLocation();
-  const initializeSocket = useInitializeSocket((s) => s.initializeSocket);
-  const disconnectSocket = useDisconnectSocket((s) => s.disconnectSocket);
-  const socket = useSocket((s) => s.socket);
+  const initializeSocket = useInitializeSocket();
+  const disconnectSocket = useDisconnectSocket();
+  const socket = useSocket();
   const user = useAuthUser();
   const logout = useLogout();
+  const initializeAuth = useInitializeAuth();
+
+  // Initialize auth for current tab on mount
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const isChatRoute = location.pathname === "/chat";
 
-    if (isChatRoute && token && !socket) {
+    if (isChatRoute && token && user && !socket) {
       initializeSocket(user, logout);  
     }
 
@@ -32,7 +38,9 @@ const SocketManager = () => {
         disconnectSocket();
       }
     };
+    
     window.addEventListener("beforeunload", handleTabClose);
+    
     return () => {
       window.removeEventListener("beforeunload", handleTabClose);
     };

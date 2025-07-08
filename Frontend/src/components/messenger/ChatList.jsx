@@ -1,25 +1,41 @@
 import { useEffect, useCallback } from "react";
 import axios from "axios";
+
 import ChatItem from "./ChatItem";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 
-const ChatList = ({
-  chats,
-  setChats,
-  handleChatSelect,
-  setLoadingChats,
-  loadingChats,
-  user,
-  refreshChats,
-}) => {
+import {
+  useChats,
+  useSetChats,
+  useLoadingChats,
+  useSetLoadingChats,
+  useHandleChatSelect,
+  useRefreshChats,
+} from "../../stores/chatStore";
+import { useSocket } from "../../stores/socketStore";
+import { useAuthUser } from "../../stores/authStore";
+
+
+const ChatList = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  const chats = useChats();
+  const setChats = useSetChats();
+  const loadingChats = useLoadingChats();
+  const setLoadingChats = useSetLoadingChats();
+  const handleChatSelect = useHandleChatSelect();
+  const refreshChats = useRefreshChats();
+  const user=useAuthUser()
+  
+  const socket=useSocket()
 
   const fetchChats = useCallback(async () => {
     if (!user?.username) return;
 
     try {
       setLoadingChats(true);
+
       const response = await axios.get(
         `${backendUrl}/api/conversation/${user.username}`,
         {
@@ -28,8 +44,6 @@ const ChatList = ({
           },
         }
       );
-      console.log(response);
-      
 
       const fetchedChats = response.data.map((chat) => {
         const otherParticipant = chat.participants.find(
@@ -51,15 +65,15 @@ const ChatList = ({
           lastMessage: chat.lastMessage?.content || "Start a conversation",
           time: timestamp,
           participants: chat.participants,
+          sortTimestamp: chat.lastMessage?.timestamp
+            ? new Date(chat.lastMessage.timestamp).getTime()
+            : 0,
         };
       });
 
-      // Sort chats by timestamp (most recent first)
-      const sortedChats = fetchedChats.sort((a, b) => {
-        const timeA = a.time ? new Date(`1970/01/01 ${a.time}`) : new Date(0);
-        const timeB = b.time ? new Date(`1970/01/01 ${b.time}`) : new Date(0);
-        return timeB - timeA;
-      });
+      const sortedChats = fetchedChats.sort(
+        (a, b) => b.sortTimestamp - a.sortTimestamp
+      );
 
       setChats(sortedChats);
     } catch (error) {
@@ -71,7 +85,7 @@ const ChatList = ({
 
   useEffect(() => {
     fetchChats();
-  }, [fetchChats, refreshChats]); // Now includes refreshChats dependency
+  }, [fetchChats, refreshChats]);
 
   if (loadingChats) {
     return (
@@ -100,7 +114,7 @@ const ChatList = ({
         <ChatItem
           key={chat.id}
           chat={chat}
-          onClick={() => handleChatSelect(chat)}
+          onClick={() => handleChatSelect(chat, user,socket)}
         />
       ))}
     </div>

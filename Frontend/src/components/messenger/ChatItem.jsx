@@ -8,7 +8,7 @@ const ChatItem = ({ chat, onClick }) => {
 
       <div className="flex items-center">
         <div
-          className="w-12 h-12 flex rounded-full items-center justify-center text-white shadow-md transform transition-all duration-300 group-hover:scale-110"
+          className="w-12 h-12 flex rounded-full items-center justify-center text-white shadow-md transform transition-all duration-300 "
           style={{
             background: chat.avatar.color,
             backgroundImage: `linear-gradient(to bottom right, ${chat.avatar.color}, ${chat.avatar.color}80)`,
@@ -18,7 +18,7 @@ const ChatItem = ({ chat, onClick }) => {
         </div>
 
         <div className="ml-4 flex-1">
-          <div className="font-semibold text-gray-800 group-hover:text-xl transition-all">
+          <div className="font-semibold text-gray-600 group-hover:text-neutral-900 transition-all">
             {chat.name}
           </div>
           <div className="text-sm text-gray-500 truncate max-w-[200px]">
