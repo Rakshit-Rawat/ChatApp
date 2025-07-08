@@ -19,8 +19,20 @@ const server = createServer(app);
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors({origin: ['http://localhost:5173','https://buzz-link-azure.vercel.app'],
-  credentials: true}));
+
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://buzz-link-azure.vercel.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.options('*', cors({
+  origin: ['http://localhost:5173', 'https://buzz-link-azure.vercel.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use("/auth", authRoute);
 app.use("/api/user", userRoute);
