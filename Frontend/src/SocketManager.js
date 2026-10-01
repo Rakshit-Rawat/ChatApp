@@ -1,7 +1,16 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useSocket, useInitializeSocket, useDisconnectSocket } from "./stores/socketStore";
-import { useAuthUser, useLogout, useInitializeAuth } from "./stores/authStore";
+import { useLocation } from "react-router";
+
+import {
+  useAuthUser,
+  useInitializeAuth,
+  useLogout,
+} from "./stores/authStore";
+import {
+  useDisconnectSocket,
+  useInitializeSocket,
+  useSocket,
+} from "./stores/socketStore";
 
 const SocketManager = () => {
   const location = useLocation();
@@ -12,7 +21,6 @@ const SocketManager = () => {
   const logout = useLogout();
   const initializeAuth = useInitializeAuth();
 
-  // Initialize auth for current tab on mount
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
@@ -22,15 +30,21 @@ const SocketManager = () => {
     const isChatRoute = location.pathname === "/chat";
 
     if (isChatRoute && token && user && !socket) {
-      initializeSocket(user, logout);  
+      initializeSocket(user, logout);
+      return;
     }
 
-    return () => {
-      if (!isChatRoute && socket) {
-        disconnectSocket();
-      }
-    };
-  }, [location.pathname, socket, initializeSocket, disconnectSocket, user, logout]);
+    if (!isChatRoute && socket) {
+      disconnectSocket();
+    }
+  }, [
+    disconnectSocket,
+    initializeSocket,
+    location.pathname,
+    logout,
+    socket,
+    user,
+  ]);
 
   useEffect(() => {
     const handleTabClose = () => {
@@ -38,15 +52,12 @@ const SocketManager = () => {
         disconnectSocket();
       }
     };
-    
-    window.addEventListener("beforeunload", handleTabClose);
-    
-    return () => {
-      window.removeEventListener("beforeunload", handleTabClose);
-    };
-  }, [socket, disconnectSocket]);
 
-  return null; 
+    window.addEventListener("beforeunload", handleTabClose);
+    return () => window.removeEventListener("beforeunload", handleTabClose);
+  }, [disconnectSocket, socket]);
+
+  return null;
 };
 
 export default SocketManager;

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 const useAuthRedirect = (user) => {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ const useAuthRedirect = (user) => {
     if (!user) {
       navigate("/register");
     }
-  }, [user, navigate]);
+  }, [navigate, user]);
 };
 
 export default useAuthRedirect;

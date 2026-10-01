@@ -1,96 +1,91 @@
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import axios from "axios";
 
-import ChatItem from "./ChatItem";
-import LoadingSpinner from "../ui/LoadingSpinner";
-import EmptyState from "../ui/EmptyState";
-
+import { useAuthUser } from "../../stores/authStore";
 import {
   useChats,
-  useSetChats,
-  useLoadingChats,
-  useSetLoadingChats,
   useHandleChatSelect,
+  useLoadingChats,
   useRefreshChats,
+  useSetChats,
+  useSetLoadingChats,
 } from "../../stores/chatStore";
 import { useSocket } from "../../stores/socketStore";
-import { useAuthUser } from "../../stores/authStore";
+import EmptyState from "../ui/EmptyState";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import ChatItem from "./ChatItem";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ChatList = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
   const chats = useChats();
   const setChats = useSetChats();
   const loadingChats = useLoadingChats();
   const setLoadingChats = useSetLoadingChats();
   const handleChatSelect = useHandleChatSelect();
   const refreshChats = useRefreshChats();
-  const user=useAuthUser()
-  
-  const socket=useSocket()
+  const user = useAuthUser();
+  const socket = useSocket();
+
+  const username = user?.username;
 
   const fetchChats = useCallback(async () => {
-    if (!user?.username) return;
+    if (!username) return;
+
+    setLoadingChats(true);
 
     try {
-      setLoadingChats(true);
-
       const response = await axios.get(
-        `${backendUrl}/api/conversation/${user.username}`,
+        `${backendUrl}/api/conversation/${username}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
-        }
+        },
       );
 
-      const fetchedChats = response.data.map((chat) => {
-        const otherParticipant = chat.participants.find(
-          (p) => p.username !== user.username
-        );
+      const fetchedChats = response.data
+        .map((chat) => {
+          const otherParticipant = chat.participants?.find(
+            (participant) => participant.username !== username,
+          );
+          const timestamp = chat.lastMessage?.timestamp;
 
-        const timestamp = chat.lastMessage?.timestamp
-          ? new Date(chat.lastMessage.timestamp).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })
-          : "";
+          return {
+            id: chat._id,
+            name: otherParticipant?.username,
+            avatar: otherParticipant?.avatar,
+            lastMessage: chat.lastMessage?.content || "Start a conversation",
+            time: timestamp
+              ? new Date(timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+              : "",
+            participants: chat.participants,
+            sortTimestamp: timestamp ? new Date(timestamp).getTime() : 0,
+          };
+        })
+        .filter((chat) => chat.name)
+        .sort((a, b) => b.sortTimestamp - a.sortTimestamp);
 
-        return {
-          id: chat._id,
-          name: otherParticipant?.username,
-          avatar: otherParticipant?.avatar,
-          lastMessage: chat.lastMessage?.content || "Start a conversation",
-          time: timestamp,
-          participants: chat.participants,
-          sortTimestamp: chat.lastMessage?.timestamp
-            ? new Date(chat.lastMessage.timestamp).getTime()
-            : 0,
-        };
-      });
-
-      const sortedChats = fetchedChats.sort(
-        (a, b) => b.sortTimestamp - a.sortTimestamp
-      );
-
-      setChats(sortedChats);
+      setChats(fetchedChats);
     } catch (error) {
       console.error("Error fetching chats:", error);
     } finally {
       setLoadingChats(false);
     }
-  }, [user?.username, backendUrl, setChats, setLoadingChats]);
+  }, [setChats, setLoadingChats, username]);
 
   useEffect(() => {
-    fetchChats();
+    void fetchChats();
   }, [fetchChats, refreshChats]);
 
   if (loadingChats) {
     return (
       <div className="flex-1 overflow-y-auto bg-gray-50">
-        <LoadingSpinner message="Loading Chats..." />
+        <LoadingSpinner message="Loading chats..." />
       </div>
     );
   }
@@ -99,10 +94,8 @@ const ChatList = () => {
     return (
       <div className="flex-1 overflow-y-auto bg-gray-50">
         <EmptyState
-          icon="chat"
           title="No Chats Available"
-          description="Start a conversation to see it here."
-          buttonText="New Chat"
+          description="Search for a user above to start a conversation."
         />
       </div>
     );
@@ -114,7 +107,7 @@ const ChatList = () => {
         <ChatItem
           key={chat.id}
           chat={chat}
-          onClick={() => handleChatSelect(chat, user,socket)}
+          onClick={() => handleChatSelect(chat, user, socket)}
         />
       ))}
     </div>

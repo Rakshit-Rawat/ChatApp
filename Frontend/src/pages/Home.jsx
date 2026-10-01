@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router";
 
 // Grayscale color palette
 const COLORS = {
@@ -265,7 +265,7 @@ const Home = () => {
                 className="h-40"
               >
                 <div style={cardContentStyle}>
-                  <div className="flex-grow flex items-center justify-center">
+                  <div className="grow flex items-center justify-center">
                     <img
                       src={tech.icon}
                       alt={tech.name}
@@ -295,9 +295,9 @@ const Home = () => {
               onClick={() => navigate("/register")}
             >
               Try Out
-              <span className="absolute left-0 right-0 bottom-px h-0.5 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></span>
+              <span className="absolute left-0 right-0 bottom-px h-0.5 mx-auto bg-linear-to-r from-transparent via-cyan-500 to-transparent"></span>
               <motion.span
-                className="absolute left-0 right-0 bottom-px h-1 mx-auto w-3/4 bg-gradient-to-r from-transparent via-cyan-500 to-transparent blur opacity-0"
+                className="absolute left-0 right-0 bottom-px h-1 mx-auto w-3/4 bg-linear-to-r from-transparent via-cyan-500 to-transparent blur-sm opacity-0"
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}

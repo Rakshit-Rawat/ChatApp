@@ -1,8 +1,17 @@
-# React + Vite
+# VChat Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend is the React/Vite client for VChat. The complete project documentation, architecture, implemented feature list, setup instructions, realtime event flow, and current limitations are maintained in the repository root [`README.md`](../README.md).
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Required environment variable:
+
+```env
+VITE_BACKEND_URL=http://localhost:6000
+```

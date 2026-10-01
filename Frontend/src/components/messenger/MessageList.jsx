@@ -1,8 +1,6 @@
-import React from "react";
-import Message from "./Message";
-import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyConvo from "../ui/EmptyConvo";
-
+import LoadingSpinner from "../ui/LoadingSpinner";
+import Message from "./Message";
 import {
   useMessages,
   useMessagesLoading,
@@ -12,7 +10,7 @@ import {
 } from "../../stores/chatStore";
 import { useAuthUser } from "../../stores/authStore";
 
-const MessageList = ({  messagesEndRef }) => {
+const MessageList = ({ messagesEndRef }) => {
   const messages = useMessages();
   const messagesLoading = useMessagesLoading();
   const selectedChat = useSelectedChat();
@@ -24,34 +22,26 @@ const MessageList = ({  messagesEndRef }) => {
     return <LoadingSpinner message="Loading messages..." />;
   }
 
-  if (!selectedChat) {
-    return null;
-  }
-
-  if (messages.length === 0) {
-    return <EmptyConvo selectedChat={selectedChat} />;
-  }
+  if (!selectedChat) return null;
+  if (messages.length === 0) return <EmptyConvo selectedChat={selectedChat} />;
 
   return (
-    <div
-      className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-blue-50 to-indigo-50 scrollbar 
-        scrollbar-thumb-black scrollbar-track-black"
-    >
+    <div className="flex-1 p-4 overflow-y-auto bg-linear-to-b from-blue-50 to-indigo-50 scrollbar">
       <div className="space-y-4">
-        {messages.map((msg, index) => {
+        {messages.map((message, index) => {
           const isCurrentUser =
-            msg.senderId === user.id || msg.senderUsername === user.username;
-          const isSelected = selectedMessageIds.includes(msg._id);
+            message.sender?._id === user?.id ||
+            message.sender === user?.id ||
+            message.senderId === user?.id ||
+            message.senderUsername === user?.username;
 
           return (
             <Message
-              key={msg._id || index}
-              message={msg}
+              key={message._id || index}
+              message={message}
               isCurrentUser={isCurrentUser}
-              isSelected={isSelected}
+              isSelected={selectedMessageIds.includes(message._id)}
               toggleMessageSelection={toggleMessageSelection}
-              userId={user.id}
-              username={user.username}
             />
           );
         })}

@@ -1,34 +1,38 @@
+import axios from "axios";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-// Generate or get tab ID
 const getTabId = () => {
   let tabId = sessionStorage.getItem("tabId");
+
   if (!tabId) {
-    tabId = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
     sessionStorage.setItem("tabId", tabId);
   }
+
   return tabId;
 };
 
-// Custom storage that uses tab-specific keys
+const getStoredUsers = () =>
+  JSON.parse(localStorage.getItem("storedUsers") || "{}");
+
+const setAuthorizationHeader = (token) => {
+  if (token) {
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common.Authorization;
+  }
+};
+
 const createTabSpecificStorage = () => {
   const tabId = getTabId();
-  
+
   return {
-    getItem: (name) => {
-      const item = localStorage.getItem(`${name}_${tabId}`);
-      return item;
-    },
-    setItem: (name, value) => {
-      localStorage.setItem(`${name}_${tabId}`, value);
-    },
-    removeItem: (name) => {
-      localStorage.removeItem(`${name}_${tabId}`);
-    },
+    getItem: (name) => localStorage.getItem(`${name}_${tabId}`),
+    setItem: (name, value) => localStorage.setItem(`${name}_${tabId}`, value),
+    removeItem: (name) => localStorage.removeItem(`${name}_${tabId}`),
   };
 };
 
@@ -40,26 +44,33 @@ const useAuthStore = create(
       setUser: (user) => {
         set({ user });
 
-        const currentTabId = getTabId();
-        const storedUsers = JSON.parse(
-          localStorage.getItem("storedUsers") || "{}"
-        );
+        const tabId = getTabId();
+        const storedUsers = getStoredUsers();
 
         if (user) {
-          storedUsers[currentTabId] = user;
+          storedUsers[tabId] = user;
         } else {
-          delete storedUsers[currentTabId];
+          delete storedUsers[tabId];
         }
 
         localStorage.setItem("storedUsers", JSON.stringify(storedUsers));
+        setAuthorizationHeader(localStorage.getItem("authToken"));
+      },
 
-        // Handle global auth token (shared for socket connections)
-        const token = localStorage.getItem("authToken");
-        
-        if (token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        } else {
-          delete axios.defaults.headers.common["Authorization"];
+      register: async (account) => {
+        try {
+          const response = await axios.post(`${backendUrl}/auth/register`, account, {
+            withCredentials: true,
+          });
+
+          return response.data.success
+            ? { success: true, data: response.data }
+            : { success: false, message: "Registration failed." };
+        } catch (error) {
+          return {
+            success: false,
+            message: error.response?.data?.error || "Registration failed.",
+          };
         }
       },
 
@@ -68,33 +79,29 @@ const useAuthStore = create(
           const response = await axios.post(
             `${backendUrl}/auth/login`,
             credentials,
-            {
-              withCredentials: true,
-            }
+            { withCredentials: true }
           );
 
-          if (response.data.success) {
-            const token = response.data.TOKEN;
-            
-            // Store token globally (shared across tabs for socket connection)
-            localStorage.setItem("authToken", token);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-            const userData = response.data.user;
-            get().setUser(userData);
-
-            return { success: true, data: response.data };
+          if (!response.data.success) {
+            return { success: false, message: "Login failed." };
           }
 
-          return { success: false, message: "Login failed." };
+          const token = response.data.TOKEN;
+          localStorage.setItem("authToken", token);
+          setAuthorizationHeader(token);
+          get().setUser(response.data.user);
+
+          return { success: true, data: response.data };
         } catch (error) {
-          const message = error.response?.data?.error || "Login failed.";
-          return { success: false, message };
+          return {
+            success: false,
+            message: error.response?.data?.error || "Login failed.",
+          };
         }
       },
 
       logout: async () => {
-        const currentTabId = getTabId();
+        const tabId = getTabId();
         const user = get().user;
 
         try {
@@ -103,33 +110,24 @@ const useAuthStore = create(
             { userId: user?.id, username: user?.username },
             { withCredentials: true }
           );
-
-          const storedUsers = JSON.parse(
-            localStorage.getItem("storedUsers") || "{}"
-          );
-          delete storedUsers[currentTabId];
+        } catch (error) {
+          console.error("Logout request failed:", error);
+        } finally {
+          const storedUsers = getStoredUsers();
+          delete storedUsers[tabId];
           localStorage.setItem("storedUsers", JSON.stringify(storedUsers));
 
-          // Only remove global token if no other tabs have users
-          const remainingUsers = Object.keys(storedUsers).length;
-          if (remainingUsers === 0) {
+          if (Object.keys(storedUsers).length === 0) {
             localStorage.removeItem("authToken");
-            delete axios.defaults.headers.common["Authorization"];
+            setAuthorizationHeader(null);
           }
 
           set({ user: null });
-        } catch (error) {
-          console.error("Logout failed:", error);
         }
       },
 
-      // Initialize auth state for current tab
       initializeAuth: () => {
-        const token = localStorage.getItem("authToken");
-        
-        if (token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        }
+        setAuthorizationHeader(localStorage.getItem("authToken"));
       },
     }),
     {
@@ -140,41 +138,13 @@ const useAuthStore = create(
   )
 );
 
-// Initialize auth on store creation
 useAuthStore.getState().initializeAuth();
 
-export const useAuthUser = () => {
-  const user = useAuthStore((state) => state.user);
-  return user;
-};
-
-export const useSetUser = () => {
-  const setUser = useAuthStore((state) => state.setUser); 
-  return setUser;
-};
-
-export const useLogin = () => {
-  const login = useAuthStore((state) => state.login);
-  const handleLogin = async (credentials) => {
-    const response = await login(credentials);
-    return response;
-  };
-  return handleLogin;
-};
-
-export const useLogout = () => {
-  const logout = useAuthStore((state) => state.logout);
-
-  const handleLogout = async () => {
-    await logout(); 
-  };
-
-  return handleLogout;
-};
-
-export const useInitializeAuth = () => {
-  const initializeAuth = useAuthStore((state) => state.initializeAuth);
-  return initializeAuth;
-};
+export const useAuthUser = () => useAuthStore((state) => state.user);
+export const useRegister = () => useAuthStore((state) => state.register);
+export const useLogin = () => useAuthStore((state) => state.login);
+export const useLogout = () => useAuthStore((state) => state.logout);
+export const useInitializeAuth = () =>
+  useAuthStore((state) => state.initializeAuth);
 
 export default useAuthStore;

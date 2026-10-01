@@ -1,21 +1,22 @@
-import React, { useState } from "react";
-import { useSetUser } from "@/stores/authStore";
-import { User, Mail, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, CheckCircle2, Lock, Mail, User } from "lucide-react";
+import { Link } from "react-router";
+
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Alert, AlertDescription } from "../components/ui/alert";
 import { Label } from "../components/ui/label";
-import { Link } from "react-router-dom";
+import { useRegister } from "../stores/authStore";
 
 const Register = () => {
-  const register = useSetUser();
+  const register = useRegister();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -25,23 +26,29 @@ const Register = () => {
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setFormData((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError(null);
+    setSuccess(null);
     setIsLoading(true);
 
     try {
       const response = await register(formData);
+
       if (response.success) {
-        setSuccess("Registration successful!");
+        setSuccess("Registration successful. You can sign in now.");
+        setFormData({ username: "", email: "", password: "" });
       } else {
         setError(response.message || "Registration failed. Please try again.");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -50,12 +57,8 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
-      {/* Background layers with CSS animations and gradients */}
       <div className="fixed inset-0 overflow-hidden z-0">
-        {/* Base dark background */}
-        <div className="absolute inset-0 bg-zinc-900"></div>
-
-        {/* Animated dot grid layer 1 */}
+        <div className="absolute inset-0 bg-zinc-900" />
         <div
           className="absolute inset-0"
           style={{
@@ -68,8 +71,6 @@ const Register = () => {
             animation: "moveBackground 120s linear infinite",
           }}
         />
-
-        {/* Animated dot grid layer 2 */}
         <div
           className="absolute inset-0"
           style={{
@@ -82,8 +83,6 @@ const Register = () => {
             animation: "moveBackground 180s linear infinite reverse",
           }}
         />
-
-        {/* Subtle gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -99,106 +98,83 @@ const Register = () => {
             Create Account
           </CardTitle>
         </CardHeader>
+
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="username"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Username
-                </Label>
+                <Label htmlFor="username">Username</Label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <User className="h-4 w-4" />
-                  </div>
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="username"
                     name="username"
                     type="text"
                     placeholder="Enter your username"
+                    value={formData.username}
                     onChange={handleChange}
                     required
-                    className="pl-10 border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email
-                </Label>
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <Mail className="h-4 w-4" />
-                  </div>
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="Enter your email address"
+                    value={formData.email}
                     onChange={handleChange}
                     required
-                    className="pl-10 border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-800"
-                >
-                  Password
-                </Label>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="Create a secure password"
+                    placeholder="Create a password"
+                    value={formData.password}
                     onChange={handleChange}
                     required
-                    className="pl-10 border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="pt-2">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md transition-colors"
-              >
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6"
+            >
+              {isLoading ? "Creating Account..." : "Create Account"}
+            </Button>
           </form>
 
           {success && (
-            <div className="mt-5">
-              <Alert className="bg-green-50 border border-green-100 text-green-800">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            </div>
+            <Alert className="mt-5 bg-green-50 border-green-100 text-green-800">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
           )}
 
           {error && (
-            <div className="mt-5">
-              <Alert className="bg-red-50 border border-red-100 text-red-800">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            </div>
+            <Alert className="mt-5 bg-red-50 border-red-100 text-red-800">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
         </CardContent>
 
@@ -206,7 +182,7 @@ const Register = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors"
+            className="ml-1 text-blue-600 font-medium hover:text-blue-800"
           >
             Sign in
           </Link>

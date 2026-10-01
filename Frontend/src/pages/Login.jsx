@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import { useLogin } from '@/stores/authStore';
-import { Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Button } from '../components/ui/button';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Label } from '../components/ui/label';
-import { Link, useNavigate } from 'react-router-dom' 
+import { useState } from "react";
+import { useLogin } from "@/stores/authStore";
+import { Mail, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Label } from "../components/ui/label";
+import { Link, useNavigate } from "react-router";
 
 const Login = () => {
-  const login= useLogin();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const login = useLogin();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,19 +30,19 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     try {
       const response = await login(formData);
       if (response.success) {
-        setSuccess('Login successful!');
+        setSuccess("Login successful!");
         setTimeout(() => {
-          navigate('/chat');
+          navigate("/chat");
         }, 1000); // Redirect after 1 sec
       } else {
-        setError(response.message || 'Login failed. Please try again.');
+        setError(response.message || "Login failed. Please try again.");
       }
-    } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -50,36 +56,39 @@ const Login = () => {
         <div className="absolute inset-0 bg-zinc-900"></div>
 
         {/* Animated dot grid layer 1 */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(100, 100, 100, 0.5) 1px, transparent 0)',
-            backgroundSize: '30px 30px',
-            backgroundPosition: '0 0',
-            transform: 'rotate(30deg) scale(1.5)',
+            backgroundImage:
+              "radial-gradient(circle at 10px 10px, rgba(100, 100, 100, 0.5) 1px, transparent 0)",
+            backgroundSize: "30px 30px",
+            backgroundPosition: "0 0",
+            transform: "rotate(30deg) scale(1.5)",
             opacity: 0.7,
-            animation: 'moveBackground 120s linear infinite'
+            animation: "moveBackground 120s linear infinite",
           }}
         />
-        
+
         {/* Animated dot grid layer 2 */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            backgroundImage: 'radial-gradient(circle at 15px 15px, rgba(120, 120, 120, 0.3) 1px, transparent 0)',
-            backgroundSize: '40px 40px',
-            backgroundPosition: '10px 10px',
-            transform: 'rotate(60deg) scale(1.3)',
+            backgroundImage:
+              "radial-gradient(circle at 15px 15px, rgba(120, 120, 120, 0.3) 1px, transparent 0)",
+            backgroundSize: "40px 40px",
+            backgroundPosition: "10px 10px",
+            transform: "rotate(60deg) scale(1.3)",
             opacity: 0.5,
-            animation: 'moveBackground 180s linear infinite reverse'
+            animation: "moveBackground 180s linear infinite reverse",
           }}
         />
-        
+
         {/* Subtle gradient overlay */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at center, rgba(30, 30, 30, 0) 0%, rgba(10, 10, 10, 0.8) 100%)'
+            background:
+              "radial-gradient(circle at center, rgba(30, 30, 30, 0) 0%, rgba(10, 10, 10, 0.8) 100%)",
           }}
         />
       </div>
@@ -95,7 +104,10 @@ const Login = () => {
             <div className="space-y-4">
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -116,7 +128,10 @@ const Login = () => {
 
               {/* Password Input */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-800">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-800"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -138,12 +153,12 @@ const Login = () => {
 
             {/* Submit Button */}
             <div className="pt-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md transition-colors"
               >
-                {isLoading ? 'Logging in...' : 'Log In'}
+                {isLoading ? "Logging in..." : "Log In"}
               </Button>
             </div>
           </form>
@@ -170,8 +185,11 @@ const Login = () => {
         </CardContent>
 
         <CardFooter className="flex justify-center py-6 border-t border-gray-100 text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="ml-1 text-blue-600 font-medium hover:text-blue-800 transition-colors"
+          >
             Create one
           </Link>
         </CardFooter>
